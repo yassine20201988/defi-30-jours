@@ -29,6 +29,11 @@
     --amber:#8A5200; --amber-soft:#FCEFD9;
     --muted:#5F6B7C;
     --line:#D7DCE4; --line-strong:#C3CAD6; --grid:#E3E7ED;
+    /* encre posée SUR un aplat coloré : doit s'inverser en thème sombre, où les
+       aplats deviennent clairs — sinon blanc sur vert clair, illisible */
+    --on-cobalt:#FFFFFF; --on-green:#FFFFFF;
+    /* couleurs des courbes : le SVG ne peut pas suivre le thème avec du hex en dur */
+    --c-weight:#2743C7; --c-avg:#177245; --c-proj:#6E7889;
     --radius:14px; --pad-x:16px; --tabbar:68px;
   }
   @media (prefers-color-scheme:dark){
@@ -41,6 +46,8 @@
       --amber:#E0A64B; --amber-soft:#332714;
       --muted:#9AA6B8;
       --line:#2A3548; --line-strong:#3A4759; --grid:#28324A;
+      --on-cobalt:#0B1220; --on-green:#0B1220;
+      --c-weight:#7C93FF; --c-avg:#4FBF87; --c-proj:#9AA6B8;
     }
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -63,10 +70,23 @@
 
   /* ===== Barre de compte + sync ===== */
   .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-  .who{display:flex;align-items:center;gap:8px;min-width:0}
-  .avatar{width:28px;height:28px;border-radius:9px;background:var(--cobalt);color:#fff;
+  .whowrap{position:relative;min-width:0}
+  .who{display:flex;align-items:center;gap:8px;min-width:0;background:none;border:1px solid transparent;
+    border-radius:99px;padding:5px 10px 5px 5px;min-height:44px;max-width:100%}
+  .who[aria-expanded="true"]{background:var(--paper);border-color:var(--line)}
+  .avatar{width:28px;height:28px;border-radius:9px;background:var(--cobalt);color:var(--on-cobalt);
     display:grid;place-items:center;font-size:13px;font-weight:800;flex-shrink:0}
   .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .who .caret{font-size:10px;color:var(--muted);flex-shrink:0}
+  .menu{position:absolute;top:calc(100% + 6px);left:0;z-index:30;min-width:230px;max-width:min(300px,90vw);
+    background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:6px;
+    box-shadow:0 12px 32px rgba(14,27,44,.18)}
+  .menu-mail{font-size:11px;color:var(--muted);padding:8px 10px 10px;border-bottom:1px solid var(--line);
+    margin-bottom:6px;word-break:break-all;line-height:1.35}
+  .menu-item{display:block;width:100%;text-align:left;background:none;border:none;border-radius:9px;
+    padding:12px 10px;font-size:14px;font-weight:700;min-height:44px}
+  .menu-item:hover,.menu-item:focus-visible{background:var(--bg)}
+  .menu-item.danger{color:var(--red)}
   .syncpill{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper);
     border-radius:99px;padding:6px 12px 6px 9px;font-size:11px;font-weight:700;color:var(--muted);
     flex-shrink:0;min-height:44px}
@@ -138,7 +158,7 @@
   .habit .name{display:block;font-weight:700;font-size:15px}
   .habit .d{display:block;font-size:12px;color:var(--muted);line-height:1.3}
   .habit.on{background:var(--green-soft);border-color:var(--green)}
-  .habit.on .box{background:var(--green);border-color:var(--green);color:#fff}
+  .habit.on .box{background:var(--green);border-color:var(--green);color:var(--on-green)}
   .habit.on .name{color:var(--green)}
   .scorebar{margin-top:14px;display:flex;align-items:center;gap:10px}
   .scorebar .track{flex:1;height:8px;border-radius:99px;background:var(--bg);overflow:hidden}
@@ -152,7 +172,7 @@
     font-size:12px;font-weight:700;color:var(--muted);position:relative;padding:0}
   .cell.future{background:transparent;border-color:var(--line);border-style:dashed;cursor:default}
   .cell.partial{background:var(--cobalt-soft);border-color:var(--cobalt);color:var(--cobalt-ink)}
-  .cell.perfect{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+  .cell.perfect{background:var(--cobalt);border-color:var(--cobalt);color:var(--on-cobalt)}
   .cell.missed{background:var(--red-soft);border-color:var(--red);color:var(--red)}
   .cell.today{z-index:1}
   .cell.today::after{content:'';position:absolute;inset:-3px;border-radius:13px;border:2px solid var(--ink)}
@@ -220,7 +240,7 @@
   .lbrow:last-child{border-bottom:none}
   .lbrank{width:30px;height:30px;border-radius:9px;background:var(--bg);color:var(--muted);
     display:grid;place-items:center;font-size:13px;font-weight:800}
-  .lbrow.me .lbrank{background:var(--cobalt);color:#fff}
+  .lbrow.me .lbrank{background:var(--cobalt);color:var(--on-cobalt)}
   .lbrow.p1 .lbrank{background:var(--cobalt-soft);color:var(--cobalt-ink)}
   .lbname{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .lbmain{font-weight:800;font-size:16px;white-space:nowrap;justify-self:end}
@@ -336,7 +356,7 @@
   .gpweye{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:46px;height:46px;
     border:none;background:none;font-size:15px;border-radius:10px;opacity:.6}
   .gbtn{width:100%;margin-top:20px;padding:15px;border:none;border-radius:12px;
-    background:var(--cobalt);color:#fff;font-size:16px;font-weight:800;min-height:52px}
+    background:var(--cobalt);color:var(--on-cobalt);font-size:16px;font-weight:800;min-height:52px}
   .gbtn:disabled{opacity:.5}
   .glinks{display:flex;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap}
   .glink{background:none;border:none;color:var(--cobalt-ink);font-size:13px;font-weight:700;
@@ -359,7 +379,16 @@
 <div class="wrap" role="main">
 
   <header class="topbar">
-    <div class="who"><span class="avatar" id="uAvatar">·</span><span class="nm" id="uName">—</span></div>
+    <div class="whowrap">
+      <button type="button" class="who" id="whoBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+        <span class="avatar" id="uAvatar">·</span><span class="nm" id="uName">—</span><span class="caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="menu" id="userMenu" role="menu" hidden>
+        <div class="menu-mail" id="menuMail">—</div>
+        <button type="button" class="menu-item" role="menuitem" id="menuSettings">Réglages et données</button>
+        <button type="button" class="menu-item danger" role="menuitem" id="menuSignout">Se déconnecter</button>
+      </div>
+    </div>
     <button type="button" class="syncpill sync" id="syncPill" aria-live="polite"><i></i><span>Sync…</span></button>
   </header>
 
@@ -485,7 +514,7 @@
       <div class="card">
         <div class="chartmeta"><span class="now" id="wNow">—</span><span class="delta" id="wDelta"></span></div>
         <div id="weightChart"><div class="empty">Aucune pesée enregistrée.</div></div>
-        <div class="chlegend"><span><i style="background:#2743C7"></i>Pesées</span><span><i style="background:#177245"></i>Moyenne 7 j</span><span><i style="background:#6E7889"></i>Projection J30</span></div>
+        <div class="chlegend"><span><i style="background:var(--c-weight)"></i>Pesées</span><span><i style="background:var(--c-avg)"></i>Moyenne 7 j</span><span><i style="background:var(--c-proj)"></i>Projection J30</span></div>
       </div>
     </div>
 
@@ -519,7 +548,8 @@
           <div class="setrow"><label for="lbOptIn">Apparaître au classement</label>
             <input type="checkbox" id="lbOptIn" checked></div>
 
-          <div class="setrow"><label for="startInput">Date de début</label><input type="date" id="startInput"></div>
+          <div class="setrow"><label for="startInput">Date de début</label>
+            <input type="date" id="startInput" min="2020-01-01" max="2100-01-01"></div>
           <div class="setrow"><label for="targetInput">Poids cible (kg)</label>
             <input type="number" id="targetInput" inputmode="decimal" step="0.1" min="20" max="300" placeholder="optionnel"></div>
 
@@ -700,14 +730,25 @@ function paceOnly(sec){
 }
 
 /* Reconstruit un état sain depuis n'importe quelle entrée. Rien d'autre n'entre dans `state`. */
+/* Une date que Postgres acceptera : bon format, vraie date du calendrier, et dans la
+   fenêtre des CHECK du schéma. Sans ce filtre, un 2019-06-01 ou un 2026-02-31 part en
+   base, se fait rejeter en 23514/22008, et bloque DÉFINITIVEMENT toute la file d'attente. */
+const DATE_MIN='2020-01-01', DATE_MAX='2100-01-01';
+function validISO(iso){
+  if(typeof iso!=='string'||!ISO_RE.test(iso))return false;
+  if(iso<DATE_MIN||iso>DATE_MAX)return false;
+  const[y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  return dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d;
+}
+
 function normalize(s){
   if(!s||typeof s!=='object')return null;
-  if(typeof s.startDate!=='string'||!ISO_RE.test(s.startDate))return null;
-  if(isNaN(new Date(s.startDate+'T00:00:00')))return null;
+  if(!validISO(s.startDate))return null;
   const out={startDate:s.startDate,target:clampNum(s.target,20,300),days:{},version:2};
   const src=(s.days&&typeof s.days==='object')?s.days:{};
   Object.keys(src).forEach(k=>{
-    if(!ISO_RE.test(k))return;
+    if(!validISO(k))return;
     const d=src[k]||{}, r=(d.run&&typeof d.run==='object')?d.run:{};
     const day={
       weight:clampNum(d.weight,20,300), sleep:clampNum(d.sleep,0,24),
@@ -814,6 +855,9 @@ function fromRow(r){
 const SYNC={busy:false,again:false,tries:0,lastPull:0,lastOk:null,state:'ok'};
 const BACKOFF=[800,2000,5000,12000,30000,60000];
 const SYNCTXT={ok:'Synchronisé',sync:'Sync…',off:'Hors ligne',err:'Erreur'};
+/* 22xxx = donnée invalide, 23xxx = contrainte violée. Réessayer ne changera rien :
+   il faut purger l'entrée fautive, sinon la file entière reste bloquée à vie. */
+function isPermanent(e){return /^(22|23)/.test((e&&e.code)||'')}
 
 function setSync(s){SYNC.state=s;paintSync()}
 function paintSync(){
@@ -841,12 +885,18 @@ async function flush(){
     if(q['@profile']!==undefined){
       const stamp=q['@profile']||nowISO();
       const{error}=await sb.from('profiles').upsert({
-        id:SESSION.uid,display_name:SESSION.name||'Participant',
-        start_date:state.startDate,weight_target:clampNum(state.target,20,300),
+        id:SESSION.uid,display_name:(SESSION.name||'Participant').slice(0,24),
+        start_date:validISO(state.startDate)?state.startDate:todayISO(),
+        weight_target:clampNum(state.target,20,300),
         share_on_leaderboard:!!SESSION.share,updated_at:stamp
       },{onConflict:'id'});
-      if(error)throw error;
-      queueClearMany({'@profile':q['@profile']});
+      if(error){
+        /* Une ligne refusée pour cause de contrainte le sera à chaque tentative :
+           la garder en file bloquerait aussi les journées, définitivement. */
+        if(!isPermanent(error))throw error;
+        queueClearMany({'@profile':q['@profile']});
+        toast('Réglages refusés par le serveur — vérifie ta date de début');
+      }else queueClearMany({'@profile':q['@profile']});
     }
     const isos=keys.filter(k=>k!=='@profile');
     const rows=[],dels=[],sent={};
@@ -856,8 +906,14 @@ async function flush(){
       if(!d||isBlank(d))dels.push(iso); else rows.push(toRow(iso,d));
     });
     for(let i=0;i<rows.length;i+=100){
-      const{error}=await sb.from('day_entries').upsert(rows.slice(i,i+100),{onConflict:'user_id,entry_date'});
-      if(error)throw error;
+      const batch=rows.slice(i,i+100);
+      const{error}=await sb.from('day_entries').upsert(batch,{onConflict:'user_id,entry_date'});
+      if(error){
+        if(!isPermanent(error))throw error;
+        const bad={};batch.forEach(r=>{bad[r.entry_date]=sent[r.entry_date]});
+        queueClearMany(bad);
+        toast(batch.length+' journée(s) refusée(s) par le serveur');
+      }
     }
     if(dels.length){
       const{error}=await sb.from('day_entries').delete().eq('user_id',SESSION.uid).in('entry_date',dels);
@@ -879,6 +935,7 @@ async function flush(){
 
 async function pull(){
   if(!sb||!SESSION.uid||SESSION.offline||navigator.onLine===false)return false;
+  const forUid=SESSION.uid;              /* un pull lent ne doit pas atterrir dans un autre compte */
   const[p,d]=await Promise.all([
     sb.from('profiles').select('display_name,start_date,weight_target,share_on_leaderboard,group_code,legacy_migrated_at,updated_at')
       .eq('id',SESSION.uid).maybeSingle(),
@@ -886,7 +943,9 @@ async function pull(){
       .eq('user_id',SESSION.uid)
   ]);
   if(p.error)throw p.error; if(d.error)throw d.error;
+  if(SESSION.uid!==forUid)return false;  /* déconnexion ou changement de compte pendant la requête */
   mergeRemote(d.data||[],p.data||null);
+  clampSelected();                        /* la date de début a pu changer côté serveur */
   SYNC.lastPull=Date.now();
   writeCache();paintSync();
   return true;
@@ -901,9 +960,13 @@ function mergeRemote(rows,prof){
     if(loc&&!isBlank(loc)&&(!rem||ts(loc.updated_at)>ts(rem.updated_at)))markDirty(iso);
   });
   if(prof){
-    if(prof.display_name)SESSION.name=prof.display_name;
+    /* group_code n'est jamais modifié par la file d'attente (l'adhésion à un cercle
+       écrit directement en base), donc le serveur en est toujours la vérité. */
     SESSION.code=prof.group_code||null;
     if(ts(prof.updated_at)>=ts(PROFILE_STAMP)){   /* égalité => le serveur gagne, pas de ping-pong */
+      /* display_name DOIT rester sous cette garde : sinon un renommage encore en file
+         est écrasé par le serveur, puis renvoyé tel quel — perdu des deux côtés. */
+      if(prof.display_name)SESSION.name=prof.display_name;
       if(prof.start_date)state.startDate=prof.start_date;
       state.target=num(prof.weight_target);
       SESSION.share=prof.share_on_leaderboard!==false;
@@ -931,7 +994,7 @@ function wireSyncTriggers(){
       if(s&&s.user&&s.user.id===SESSION.uid){SESSION.offline=false;setSync('sync');await maybePull(true)}
       else{leaveApp('Session expirée. Reconnecte-toi : tes '+queueCount()+' modification(s) sont conservées.');return}
     }
-    flush();maybePull(true);
+    flush();maybePull(true);loadLeaderboard(true);
   });
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){hardSaveLocal();return}
@@ -1112,7 +1175,18 @@ async function onAuth(event,s){
   if(event==='PASSWORD_RECOVERY'){bootDone=true;gShow('recovery');return}
   if(s&&s.user){
     bootDone=true;
-    if(SESSION.uid===s.user.id)return;   /* TOKEN_REFRESHED, retour de focus : rien à faire */
+    if(SESSION.uid===s.user.id){
+      /* Session valide arrivée APRÈS que le délai de 5 s nous ait basculés en mode
+         hors ligne : sans ça l'app restait figée hors ligne jusqu'au rechargement,
+         alors que le réseau n'a jamais été coupé (donc aucun event 'online' à venir). */
+      if(SESSION.offline){
+        SESSION.offline=false;SYNC.tries=0;setSync('sync');
+        try{const prof=await ensureProfile();await maybeMigrateLegacy(prof);await pull();render()}
+        catch(e){setSync('err')}
+        flush();loadLeaderboard(true);
+      }
+      return;                            /* TOKEN_REFRESHED, retour de focus : rien à faire */
+    }
     await enterApp(s.user);
     return;
   }
@@ -1196,12 +1270,14 @@ function paintAccount(){
   const n=SESSION.name||SESSION.email||'—';
   $('uName').textContent=n;
   $('uAvatar').textContent=n.trim().charAt(0).toUpperCase()||'·';
+  const mm=$('menuMail');if(mm)mm.textContent=SESSION.email||'Compte local';
   const ni=$('nameInput');if(ni&&document.activeElement!==ni)ni.value=SESSION.name||'';
   const mc=$('myCode');if(mc)mc.textContent=SESSION.code||'—';
   const ob=$('lbOptIn');if(ob)ob.checked=!!SESSION.share;
 }
 function leaveApp(msg){
-  SESSION.uid=null;SESSION.email=null;SESSION.name=null;SESSION.code=null;SESSION.offline=false;
+  SESSION.uid=null;SESSION.email=null;SESSION.name=null;SESSION.code=null;
+  SESSION.share=true;SESSION.offline=false;
   state={startDate:todayISO(),target:null,days:{}};PROFILE_STAMP=null;
   LB={rows:null,at:0,err:null,loading:false};
   clearTimeout(flushTimer);
@@ -1313,7 +1389,7 @@ function renderToday(){
   $('scoreN').textContent=s+'/5';
   $('scoreTrack').setAttribute('aria-valuenow',String(s));
 
-  $('startInput').value=state.startDate;
+  const si=document.getElementById('startInput');if(document.activeElement!==si)si.value=state.startDate;
   const ti=$('targetInput');if(document.activeElement!==ti)ti.value=state.target==null?'':state.target;
 }
 
@@ -1341,7 +1417,7 @@ function renderHistory(){
   const weeks=[[0,6],[7,13],[14,20],[21,27],[28,29]];
   weeks.forEach((rg,wi)=>{
     if(dayNum<rg[0]+1)return;
-    let perfect=0,km=0,filled=0,wStart=null,wEnd=null,daysCounted=0;
+    let perfect=0,km=0,filled=0,wStart=null,wEnd=null,weighIns=0,daysCounted=0;
     for(let i=rg[0];i<=rg[1];i++){
       const iso=addDays(state.startDate,i);
       if(iso>today)break;
@@ -1350,14 +1426,15 @@ function renderHistory(){
       if(score(iso)===5)perfect++;
       if(d){
         if(d.run&&d.run.km)km+=d.run.km;
-        if(d.weight){if(wStart===null)wStart=d.weight;wEnd=d.weight}
+        if(d.weight){if(wStart===null)wStart=d.weight;wEnd=d.weight;weighIns++}
         filled+=score(iso);
       }
     }
     if(daysCounted===0)return;
     const card=document.createElement('div');card.className='card week';
     const pct=Math.round(filled/(daysCounted*5)*100);
-    const wd=(wStart!==null&&wEnd!==null)?(wEnd-wStart):null;
+    /* une seule pesée dans la semaine ne donne pas un delta : c'est "—", pas "+0,0" */
+    const wd=(weighIns>=2)?(wEnd-wStart):null;
     card.innerHTML='<div class="whead"><span class="wtitle">Semaine '+(wi+1)+'</span><span class="wdates">'
       +esc(fmtShort(addDays(state.startDate,rg[0])))+' → '+esc(fmtShort(addDays(state.startDate,rg[1])))+'</span></div>'
       +'<div class="wgrid">'
@@ -1384,13 +1461,13 @@ function renderHistory(){
 
     const dot=document.createElement('span');dot.className='dot';
     dot.style.background=s===5?'var(--cobalt)':s>0?'var(--cobalt-soft)':'var(--red-soft)';
-    dot.style.color=s===5?'#fff':s>0?'var(--cobalt-ink)':'var(--red)';
+    dot.style.color=s===5?'var(--on-cobalt)':s>0?'var(--cobalt-ink)':'var(--red)';
     dot.textContent='J'+(i+1);
     const dl=document.createElement('span');dl.className='dl';dl.textContent=fmtLabel(iso);
     const w=document.createElement('span');w.className='w';w.textContent=d.weight?f1(d.weight)+' kg':'—';
     const dd=document.createElement('span');dd.className='dd';
     const bits=[HABITS.filter(h=>d[h]).length+'/4 habitudes'];
-    if(d.sleep)bits.push(f1(d.sleep)+' h sommeil');
+    if(d.sleep!=null)bits.push(f1(d.sleep)+' h sommeil');
     if(d.run&&d.run.km){
       bits.push(f1(d.run.km)+' km');
       if(d.run.min)bits.push(paceStr(d.run.km,d.run.min));
@@ -1450,23 +1527,23 @@ function renderWeightChart(pts,ma,proj){
     const ty=Y(state.target);
     let ly=clampY(ty-6);
     if(Math.abs(ly-projY)<FS+2)ly=clampY(ty+FS+6);
-    s+='<line x1="'+PL+'" y1="'+N(ty)+'" x2="'+(W-PR)+'" y2="'+N(ty)+'" stroke="#177245" stroke-dasharray="4 4" stroke-width="1.5"/>'
-      +'<text class="chtxt" x="'+PL+'" y="'+N(ly)+'" text-anchor="start" fill="#177245">cible '+f1(state.target)+' kg</text>';
+    s+='<line x1="'+PL+'" y1="'+N(ty)+'" x2="'+(W-PR)+'" y2="'+N(ty)+'" stroke="var(--c-avg)" stroke-dasharray="4 4" stroke-width="1.5"/>'
+      +'<text class="chtxt" x="'+PL+'" y="'+N(ly)+'" text-anchor="start" fill="var(--c-avg)">cible '+f1(state.target)+' kg</text>';
   }
   if(ma.length>1)
-    s+='<polyline fill="none" stroke="#177245" stroke-width="2" opacity=".85" points="'+ma.map(p=>N(X(p.i))+','+N(Y(p.w))).join(' ')+'"/>';
+    s+='<polyline fill="none" stroke="var(--c-avg)" stroke-width="2" opacity=".85" points="'+ma.map(p=>N(X(p.i))+','+N(Y(p.w))).join(' ')+'"/>';
   if(proj!==null){
     const q=pts[pts.length-1];
-    s+='<line x1="'+N(X(q.i))+'" y1="'+N(Y(q.w))+'" x2="'+N(X(29))+'" y2="'+N(Y(proj))+'" stroke="#6E7889" stroke-dasharray="5 4" stroke-width="2"/>'
-      +'<circle cx="'+N(X(29))+'" cy="'+N(Y(proj))+'" r="4" fill="var(--paper)" stroke="#6E7889" stroke-width="2"/>'
-      +'<text class="chtxt" x="'+(W-PR)+'" y="'+N(projY)+'" text-anchor="end" fill="#6E7889">J30 ≈ '+f1(proj)+'</text>';
+    s+='<line x1="'+N(X(q.i))+'" y1="'+N(Y(q.w))+'" x2="'+N(X(29))+'" y2="'+N(Y(proj))+'" stroke="var(--c-proj)" stroke-dasharray="5 4" stroke-width="2"/>'
+      +'<circle cx="'+N(X(29))+'" cy="'+N(Y(proj))+'" r="4" fill="var(--paper)" stroke="var(--c-proj)" stroke-width="2"/>'
+      +'<text class="chtxt" x="'+(W-PR)+'" y="'+N(projY)+'" text-anchor="end" fill="var(--c-proj)">J30 ≈ '+f1(proj)+'</text>';
   }
   if(pts.length>1)
-    s+='<polyline fill="none" stroke="#2743C7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="'
+    s+='<polyline fill="none" stroke="var(--c-weight)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="'
       +pts.map(p=>N(X(p.i))+','+N(Y(p.w))).join(' ')+'"/>';
-  pts.forEach(p=>{s+='<circle cx="'+N(X(p.i))+'" cy="'+N(Y(p.w))+'" r="3.5" fill="#2743C7"/>'});
+  pts.forEach(p=>{s+='<circle cx="'+N(X(p.i))+'" cy="'+N(Y(p.w))+'" r="3.5" fill="var(--c-weight)"/>'});
   const lp=pts[pts.length-1];
-  s+='<circle cx="'+N(X(lp.i))+'" cy="'+N(Y(lp.w))+'" r="5.5" fill="var(--paper)" stroke="#2743C7" stroke-width="2.5"/>';
+  s+='<circle cx="'+N(X(lp.i))+'" cy="'+N(Y(lp.w))+'" r="5.5" fill="var(--paper)" stroke="var(--c-weight)" stroke-width="2.5"/>';
   s+='<text class="chtxt chtxt-sm" x="'+PL+'" y="'+(H-3)+'" text-anchor="start" fill="currentColor" opacity=".65">J1</text>'
    + '<text class="chtxt chtxt-sm" x="'+(W-PR)+'" y="'+(H-3)+'" text-anchor="end" fill="currentColor" opacity=".65">J30</text>';
   s+='</svg><p class="sr-only">'+esc(weightSummary(pts,proj))+'</p>';
@@ -1488,7 +1565,7 @@ function renderRunChart(runs){
     const x=PL+(i/29)*(W-PL-PR)-bw/2;
     const h=Math.max(3,(r.km/maxKm)*(H-PT-PB));
     const rx=Math.min(3,bw/2,h/2);
-    s+='<rect x="'+N(x)+'" y="'+N(H-PB-h)+'" width="'+N(bw)+'" height="'+N(h)+'" rx="'+N(rx)+'" fill="#2743C7"/>';
+    s+='<rect x="'+N(x)+'" y="'+N(H-PB-h)+'" width="'+N(bw)+'" height="'+N(h)+'" rx="'+N(rx)+'" fill="var(--c-weight)"/>';
     if(r.km>=maxKm*0.6&&slot>9)
       s+='<text class="chtxt chtxt-sm" x="'+N(x+bw/2)+'" y="'+N(H-PB-h-5)+'" text-anchor="middle" fill="currentColor">'+f1(r.km)+'</text>';
   }
@@ -1526,11 +1603,20 @@ function renderProgress(){
     const sx=pts.reduce((a,p)=>a+p.i,0),sy=pts.reduce((a,p)=>a+p.w,0);
     const sxy=pts.reduce((a,p)=>a+p.i*p.w,0),sx2=pts.reduce((a,p)=>a+p.i*p.i,0);
     const den=n*sx2-sx*sx;
-    if(den!==0){const sl=(n*sxy-sx*sy)/den;proj=sl*29+(sy-sl*sx)/n}
+    if(den!==0){
+      const sl=(n*sxy-sx*sy)/den;
+      proj=sl*29+(sy-sl*sx)/n;
+      /* Trois pesées rapprochées et bruitées donnent une pente délirante : extrapolée
+         à J30 elle écrase toute la courbe. On borne à ±12 kg autour du dernier poids
+         et on refuse une projection physiquement absurde. */
+      const last=pts[pts.length-1].w;
+      proj=Math.max(last-12,Math.min(last+12,proj));
+      if(!isFinite(proj)||proj<20||proj>300)proj=null;
+    }
   }
 
   const sleeps=[];
-  for(let i=0;i<30;i++){const iso=addDays(state.startDate,i);const dd=state.days[iso];if(dd&&dd.sleep)sleeps.push(dd.sleep)}
+  for(let i=0;i<30;i++){const iso=addDays(state.startDate,i);const dd=state.days[iso];if(dd&&dd.sleep!=null)sleeps.push(dd.sleep)}
   const avgSleep=sleeps.length?sleeps.reduce((a,b)=>a+b,0)/sleeps.length:null;
   const fcs=runs.filter(r=>r.fc);
   const avgFc=fcs.length?fcs.reduce((a,r)=>a+r.fc,0)/fcs.length:null;
@@ -1562,7 +1648,7 @@ function renderProgress(){
   $('runMeta').className='delta';
   renderRunChart(runs);
 
-  $('startInput').value=state.startDate;
+  const si=document.getElementById('startInput');if(document.activeElement!==si)si.value=state.startDate;
   const ti=$('targetInput');if(document.activeElement!==ti)ti.value=state.target==null?'':state.target;
 }
 
@@ -1570,6 +1656,7 @@ function renderProgress(){
 let LB={rows:null,at:0,err:null,loading:false};
 
 async function loadLeaderboard(silent){
+  if(LB.loading)return;                    /* évite un second RPC identique en vol */
   if(!sb||!SESSION.uid||SESSION.offline||navigator.onLine===false){
     LB.err='offline';if(!silent||activeTab==='rank')renderRank();return;
   }
@@ -1611,6 +1698,10 @@ function renderRank(){
     warn.className='alert warn';warn.textContent='Hors ligne — le classement se met à jour à la reconnexion.';
   }else if(LB.err){
     warn.className='alert bad';warn.textContent='Impossible de charger le classement : '+LB.err;
+  }else if(!SESSION.share){
+    /* sinon l'absence de sa propre ligne ressemble à un bug */
+    warn.className='alert warn';
+    warn.textContent='Tu n\'apparais pas dans ce classement : « Apparaître au classement » est désactivé dans tes réglages.';
   }
   if(!LB.rows){list.innerHTML='<div class="empty">Classement indisponible pour l\'instant.</div>';sub.textContent='';return}
 
@@ -1665,6 +1756,16 @@ function switchTab(name){
   if(name==='rank'&&(!LB.rows||Date.now()-LB.at>60000))loadLeaderboard(true);
 }
 
+async function doSignOut(){
+  if(queueCount()&&!confirm('Il reste '+queueCount()+' modification(s) non synchronisée(s).\n\n'+
+    'Elles sont conservées sur cet appareil et repartiront à ta prochaine connexion. Se déconnecter ?'))return;
+  try{if(sb)await sb.auth.signOut()}catch(e){}
+  /* Sans ça, rouvrir l'app sans réseau après une déconnexion restaure le cache du
+     compte précédent via bootOffline() — données visibles sans aucun mot de passe. */
+  lsDel(LAST_UID_KEY);
+  leaveApp();
+}
+
 /* ================= Câblage ================= */
 function wireApp(){
   document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
@@ -1710,7 +1811,10 @@ function wireApp(){
   $('nextDay').addEventListener('click',()=>{selected=addDays(selected,1);clampSelected();render()});
 
   $('startInput').addEventListener('change',e=>{
-    if(!e.target.value||!ISO_RE.test(e.target.value))return;
+    if(!validISO(e.target.value)){
+      toast('Date de début invalide (entre 2020 et 2100)');
+      e.target.value=state.startDate;return;
+    }
     const n=Object.keys(state.days).length;
     if(n&&!confirm('Changer la date de début décale la fenêtre de 30 jours, mais PAS tes '+n+
       ' journée(s) déjà saisies : celles qui sortent de la fenêtre ne seront plus affichées ni comptées.\n\nContinuer ?')){
@@ -1773,17 +1877,33 @@ function wireApp(){
       const s=normalize(parsed);
       if(!s){toast('Fichier invalide');return}
       if(!confirm('Importer '+Object.keys(s.days).length+' journée(s) ?\n\nLes données actuelles de ce compte seront remplacées.'))return;
-      state=s;selected=todayISO();clampSelected();save('@all');render();toast('Données importées');
+      /* Remplacement, pas fusion : les journées absentes du fichier doivent être mises
+         en file pour SUPPRESSION, sinon le prochain pull() les ressuscite. */
+      const gone=Object.keys(state.days).filter(iso=>!s.days[iso]);
+      state=s;selected=todayISO();clampSelected();
+      save('@all');
+      gone.forEach(iso=>markDirty(iso));
+      writeCache();render();toast('Données importées');
     };
     r.readAsText(f);
     e.target.value='';
   });
 
-  $('signoutBtn').addEventListener('click',async()=>{
-    if(queueCount()&&!confirm('Il reste '+queueCount()+' modification(s) non synchronisée(s). Se déconnecter quand même ?'))return;
-    try{if(sb)await sb.auth.signOut()}catch(e){}
-    leaveApp();
+  $('signoutBtn').addEventListener('click',doSignOut);
+
+  /* ---- Menu du compte (barre du haut) ---- */
+  const menu=$('userMenu'), whoBtn=$('whoBtn');
+  function closeMenu(){menu.hidden=true;whoBtn.setAttribute('aria-expanded','false')}
+  function openMenu(){menu.hidden=false;whoBtn.setAttribute('aria-expanded','true')}
+  whoBtn.addEventListener('click',e=>{e.stopPropagation();menu.hidden?openMenu():closeMenu()});
+  document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target))closeMenu()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){closeMenu();whoBtn.focus()}});
+  $('menuSettings').addEventListener('click',()=>{
+    closeMenu();switchTab('progress');
+    const d=document.querySelector('#tab-progress details');
+    if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})}
   });
+  $('menuSignout').addEventListener('click',()=>{closeMenu();doSignOut()});
   $('resetBtn').addEventListener('click',async()=>{
     const isos=Object.keys(state.days);
     if(!confirm('Effacer les '+isos.length+' journée(s) de ce compte ?\n\nC\'est définitif. Exporte tes données avant si tu as un doute.'))return;

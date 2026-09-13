@@ -638,6 +638,7 @@
         <div class="gnote">8 caractères minimum.</div>
       </div>
       <button type="submit" class="gbtn" id="rSubmit">Enregistrer</button>
+      <div class="glinks"><button type="button" class="glink" id="rCancel">Annuler et revenir à la connexion</button></div>
     </form>
 
   </div>
@@ -645,7 +646,11 @@
 
 <div class="toast" id="toast" role="status"></div>
 
+<!-- integrity : le jeton de session vit dans localStorage de cette origine, un CDN
+     compromis pourrait le lire. Le navigateur refuse le script si l'empreinte change. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"
+        integrity="sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP"
+        crossorigin="anonymous" referrerpolicy="no-referrer"
         defer onerror="window.__sbFail=true"></script>
 <script>
 /* =====================================================================
@@ -990,9 +995,14 @@ function wireSyncTriggers(){
   addEventListener('online',async()=>{
     SYNC.tries=0;
     if(SESSION.offline&&sb){
-      let s=null;try{const{data}=await sb.auth.getSession();s=data&&data.session}catch(e){}
+      /* Un getSession qui ÉCHOUE (réseau encore instable au moment du retour) ne prouve
+         rien : déconnecter là-dessus ferait perdre la session pour un simple hoquet.
+         On ne déconnecte que si le serveur répond explicitement « pas de session ». */
+      let s=null, answered=false;
+      try{const{data,error}=await sb.auth.getSession();if(!error){answered=true;s=data&&data.session}}catch(e){}
       if(s&&s.user&&s.user.id===SESSION.uid){SESSION.offline=false;setSync('sync');await maybePull(true)}
-      else{leaveApp('Session expirée. Reconnecte-toi : tes '+queueCount()+' modification(s) sont conservées.');return}
+      else if(answered){leaveApp('Session expirée. Reconnecte-toi : tes '+queueCount()+' modification(s) sont conservées.');return}
+      else{setSync('err');return}          /* on retente au prochain réveil */
     }
     flush();maybePull(true);loadLeaderboard(true);
   });
@@ -1126,7 +1136,17 @@ function wireGate(){
                          timezone:(Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Paris')}}});
         if(error)throw error;
         const{error:e2}=await sb.auth.signInWithPassword({email:email,password:pass});
-        if(e2){$('sentMail').textContent=email;gShow('sent');return}
+        if(e2){
+          /* La confirmation par e-mail est désactivée : promettre un e-mail qui
+             n'arrivera jamais laisserait l'utilisateur attendre pour rien. */
+          const m2=((e2.message||'')+'').toLowerCase();
+          if(m2.includes('not confirmed')){$('sentMail').textContent=email;gShow('sent');return}
+          setMode('signin');                 /* setMode efface le message : l'afficher APRÈS */
+          $('iEmail').value=email;
+          gMsg('Compte créé, mais la connexion automatique a échoué : '+authError(e2)+
+               ' Réessaie avec « Se connecter ».','warn');
+          gBusy(false);return;
+        }
         return;   /* onAuthStateChange prend le relais */
       }
       const{error}=await sb.auth.signInWithPassword({email:email,password:pass});
@@ -1134,6 +1154,7 @@ function wireGate(){
     }catch(e){gMsg(authError(e));gBusy(false)}
   });
 
+  $('rCancel').addEventListener('click',()=>{$('rMsg').hidden=true;$('rSubmit').disabled=false;setMode('signin')});
   $('gReset').addEventListener('submit',async ev=>{
     ev.preventDefault();
     const p=$('iNew').value, m=$('rMsg');
@@ -1142,7 +1163,12 @@ function wireGate(){
     try{
       const{error}=await sb.auth.updateUser({password:p});
       if(error)throw error;
+      $('iNew').value='';
       toast('Mot de passe mis à jour');
+      /* onAuthStateChange ouvre l'app ; si la session de récupération a expiré,
+         on retombe sur la connexion plutôt que de rester bloqué sur ce panneau. */
+      let ok=false;try{const{data}=await sb.auth.getSession();ok=!!(data&&data.session)}catch(e){}
+      if(!ok)setMode('signin');
     }catch(e){m.className='gmsg err';m.textContent=authError(e);m.hidden=false;$('rSubmit').disabled=false}
   });
 }
